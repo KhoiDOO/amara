@@ -1,5 +1,4 @@
 # AMARA: Automated Multi-Agent Reinforcement Learning Archive
-
 # Environemnt Setup
 ## Petting ZOO Full Setup
 ### 1. Install CMAKE
