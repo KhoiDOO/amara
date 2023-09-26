@@ -1,5 +1,4 @@
-# amara
-AMARA: Automated Multi-Agent Reinforcement Learning Archive
+# AMARA: Automated Multi-Agent Reinforcement Learning Archive
 
 # Environemnt Setup
 ## Petting ZOO Full Setup
