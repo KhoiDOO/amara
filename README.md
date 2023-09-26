@@ -1,2 +1,2 @@
-# mara
-MARA: Multi-Agent Reinforcement Learning Archive
+# amara
+AMARA: Automated Multi-Agent Reinforcement Learning Archive
