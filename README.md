@@ -19,7 +19,7 @@ sudo apt-get install python3-dev
 
 ### 4. Install Petting Zoo Full
 ```
-pip install pettingzoo[full]
+pip install pettingzoo[all]
 ```
 
 ### 5. Install Requirements
