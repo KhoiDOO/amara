@@ -38,6 +38,11 @@ Note that Tianshou also installed Pytorch package for DL and required Nvidia car
 ```
 pip install supersuit
 ```
+## AutoROM Setup
+```
+pip install autorom
+AutoROM
+```
 
 ## Install Requirements
 ```
