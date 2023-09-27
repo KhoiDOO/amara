@@ -32,7 +32,7 @@ pip install pettingzoo[all]
 ```
 pip install tianshou
 ```
-Note that Tianshou also installed Pytorch package for DL and required Nvidia card interaction Python packages, the Pytorch does not need to be installed again, except for torch-vision, or extra modules from the Pytorch.
+Note that Tianshou also installed the Pytorch package for DL and required Nvidia card interaction Python packages, the Pytorch does not need to be installed again, except for torch-vision, or extra modules from the Pytorch.
 
 ## SuperSuit Setup
 ```
@@ -42,6 +42,10 @@ pip install supersuit
 ```
 pip install autorom
 AutoROM
+```
+## StableBaselines3 Setup
+```
+pip install stable-baselines3
 ```
 
 ## Install Requirements
