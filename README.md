@@ -6,9 +6,9 @@ source <env_name>/bin/activate
 python -m pip install --upgrade pip
 pip install weel
 ```
-Wheel is need for stably installing Python packages
+Wheel is needed for stably installing Python packages
 
-## Petting ZOO Full Setup
+## Pre Requirement Setup
 ### 1. Install CMAKE
 ```
 sudo snap install cmake --classic
@@ -22,33 +22,54 @@ sudo apt-get -y install swig
 ```
 sudo apt-get install python3-dev
 ```
+## Multi Agent Setup
 
-### 4. Install Petting Zoo Full
+### 1. Install Petting Zoo Full
 ```
 pip install pettingzoo[all]
 ```
-
-## Tianshou Setup
+### 2. SuperSuit Setup
+```
+pip install supersuit
+```
+### Tianshou Setup
 ```
 pip install tianshou
 ```
 Note that Tianshou also installed the Pytorch package for DL and required Nvidia card interaction Python packages, the Pytorch does not need to be installed again, except for torch-vision, or extra modules from the Pytorch.
 
-## SuperSuit Setup
+## Single Agent Setup
+### 1. Install Gymnasium
 ```
-pip install supersuit
+pip install pettingzoo[all]
 ```
+### 2. StableBaselines3 Setup
+```
+pip install stable-baselines3
+```
+
 ## AutoROM Setup
 ```
 pip install autorom
 AutoROM
 ```
-## StableBaselines3 Setup
+
+## Logging Setup
+
+### 1. Install Tensorboard
 ```
-pip install stable-baselines3
+pip install tensorboard
+```
+### 2. Install WandB
+```
+pip install wandb
 ```
 
 ## Install Requirements
 ```
 pip install -r requirements.txt
 ```
+
+# Experiment
+
+## 1. Wandb Initialization
