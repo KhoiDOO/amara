@@ -41,7 +41,7 @@ Note that Tianshou also installed the Pytorch package for DL and required Nvidia
 ## Single Agent Setup
 ### 1. Install Gymnasium
 ```
-pip install pettingzoo[all]
+pip install gymnasium[all]
 ```
 ### 2. StableBaselines3 Setup
 ```
