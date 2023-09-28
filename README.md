@@ -47,6 +47,10 @@ pip install gymnasium[all]
 ```
 pip install stable-baselines3
 ```
+### 3. ALE-PY Setup
+```
+pip install ale-py
+```
 
 ## AutoROM Setup
 ```
