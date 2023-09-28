@@ -32,7 +32,7 @@ pip install pettingzoo[all]
 ```
 pip install supersuit
 ```
-### Tianshou Setup
+### 3. Tianshou Setup
 ```
 pip install tianshou
 ```
