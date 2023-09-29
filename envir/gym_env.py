@@ -8,8 +8,8 @@ from stable_baselines3.common.atari_wrappers import (  # isort:skip
     NoopResetEnv,
 )
 
-def gym_atari_make_env(env_id, seed, idx, capture_video, run_name):
-    def thunk():
+def gym_atari_make_env(args):
+    def thunk(env_id, seed, idx, capture_video, run_name):
         env = gym.make(env_id)
         env = gym.wrappers.RecordEpisodeStatistics(env)
         if capture_video:
@@ -30,7 +30,7 @@ def gym_atari_make_env(env_id, seed, idx, capture_video, run_name):
         return env
 
     envs = gym.vector.SyncVectorEnv(
-        [make_env(args.env_id, args.seed + i, i, args.capture_video, run_name) for i in range(args.num_envs)]
+        [thunk(args.env_id, args.seed + i, i, args.capture_video, args.run_name) for i in range(args.num_envs)]
     )
     envs = gym.wrappers.RecordEpisodeStatistics(envs)
     
