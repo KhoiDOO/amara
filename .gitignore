@@ -161,3 +161,4 @@ cython_debug/
 
 runs/
 wandb_key/
+videos/
