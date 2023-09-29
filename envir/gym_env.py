@@ -8,7 +8,7 @@ from stable_baselines3.common.atari_wrappers import (  # isort:skip
     NoopResetEnv,
 )
 
-def make_env(env_id, seed, idx, capture_video, run_name):
+def gym_atari_make_env(env_id, seed, idx, capture_video, run_name):
     def thunk():
         env = gym.make(env_id)
         env = gym.wrappers.RecordEpisodeStatistics(env)
