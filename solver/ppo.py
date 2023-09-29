@@ -2,7 +2,8 @@ import torch
 from torch import nn
 import numpy as np
 
-def ppo_solver(agent, optimizer, envs, args, device):
+def ppo_solver(agent, optimizer, envs, args, device, 
+               obs, logprobs, actions, dones, rewards, values):
     # bootstrap value if not done
     with torch.no_grad():
         next_value = agent.get_value(next_obs).reshape(1, -1)
@@ -81,3 +82,17 @@ def ppo_solver(agent, optimizer, envs, args, device):
         if args.target_kl is not None:
             if approx_kl > args.target_kl:
                 break
+    
+    y_pred, y_true = b_values.cpu().numpy(), b_returns.cpu().numpy()
+    var_y = np.var(y_true)
+    explained_var = np.nan if var_y == 0 else 1 - np.var(y_true - y_pred) / var_y
+    
+    return {
+        "losses/value_loss" : v_loss.item(),
+        "losses/policy_loss" : pg_loss.item(),
+        "losses/entropy" : entropy_loss.item(),
+        "losses/old_approx_kl" : old_approx_kl.item(),
+        "losses/approx_kl" : approx_kl.item(),
+        "losses/clipfrac" : np.mean(clipfracs),
+        "losses/explained_variance" : explained_var
+    }
