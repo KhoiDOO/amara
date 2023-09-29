@@ -94,5 +94,6 @@ def ppo_solver(agent, optimizer, envs, args, device,
         "losses/old_approx_kl" : old_approx_kl.item(),
         "losses/approx_kl" : approx_kl.item(),
         "losses/clipfrac" : np.mean(clipfracs),
-        "losses/explained_variance" : explained_var
+        "losses/explained_variance" : explained_var,
+        "losses/total_loss" : loss.item()
     }
