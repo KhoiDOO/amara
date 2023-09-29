@@ -6,13 +6,15 @@ def parse_args():
     parser = argparse.ArgumentParser()
     
     # COMMON SETTINGS
-    
     parser.add_argument("--seed", type=int, default=1,
         help="seed of the experiment")
     parser.add_argument("--torch-deterministic", type=bool, default=True, const=True,
         help="Setup torch.backends.cudnn.deterministic")
-    parser.add_argument("--verbose", action='store_true')
-    
+    parser.add_argument("--verbose", action='store_true', 
+        help="Toggle to print reward and episodic length every end of episode")
+    parser.add_argument("--dvidx", type=int, default=0,
+        help="Index of the device used in training")
+        
     # LOGGING SETTINGS
     parser.add_argument("--wandb-project-name", type=str, default="RL-baselines",
         help="the wandb's project name")
