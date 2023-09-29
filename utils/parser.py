@@ -14,6 +14,7 @@ def parse_args():
         help="Toggle to print reward and episodic length every end of episode")
     parser.add_argument("--dvidx", type=int, default=0,
         help="Index of the device used in training")
+    parser.add_argument("--problem", type=str, default="gym_atari", choices = ["gym_atari"])
         
     # LOGGING SETTINGS
     parser.add_argument("--wandb-project-name", type=str, default="RL-baselines",
@@ -69,5 +70,6 @@ def parse_args():
     args = parser.parse_args()
     args.batch_size = int(args.num_envs * args.num_steps)
     args.minibatch_size = int(args.batch_size // args.num_minibatches)
+    args.run_name = f"{args.env_id}__{args.algo}__{args.seed}__{int(time.time())}"
     
     return args
