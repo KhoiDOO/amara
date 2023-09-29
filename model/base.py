@@ -1,7 +1,7 @@
 import torch.nn as nn
 from .utils import layer_init
 
-class Nano_CNN_Agent(nn.Module):
+class Nano_CNN_PPO_Agent(nn.Module):
     def __init__(self, envs):
         super().__init__()
         self.network = nn.Sequential(

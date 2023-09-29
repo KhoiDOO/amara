@@ -1,1 +1,1 @@
-from .base import Nano_CNN_Agent
+from .base import Nano_CNN_PPO_Agent
