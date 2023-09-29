@@ -11,6 +11,7 @@ def parse_args():
         help="seed of the experiment")
     parser.add_argument("--torch-deterministic", type=bool, default=True, const=True,
         help="Setup torch.backends.cudnn.deterministic")
+    parser.add_argument("--verbose", action='store_true')
     
     # LOGGING SETTINGS
     parser.add_argument("--wandb-project-name", type=str, default="RL-baselines",
