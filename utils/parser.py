@@ -3,7 +3,6 @@ import time
 
 def parse_args():
     
-    
     parser = argparse.ArgumentParser()
     
     # COMMON SETTINGS
@@ -51,7 +50,6 @@ def parse_args():
     parser.add_argument("--algo", type=str, default='ppo', choices = ['ppo'],
         help="Alogrithm used in training")
     
-    
     # PPO SETTINGS
     parser.add_argument("--gae-lambda", type=float, default=0.95,
         help="the lambda for the general advantage estimation")
@@ -69,7 +67,6 @@ def parse_args():
         help="the maximum norm for the gradient clipping")
     parser.add_argument("--target-kl", type=float, default=None,
         help="the target KL divergence threshold")
-
     
     args = parser.parse_args()
     args.batch_size = int(args.num_envs * args.num_steps)
