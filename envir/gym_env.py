@@ -25,8 +25,8 @@ def make_env(env_id, seed, idx, capture_video, run_name):
         env = gym.wrappers.GrayScaleObservation(env)
         env = gym.wrappers.FrameStack(env, 4)
         env.unwrapped.seed(seed)
-        env.action_space.seed(seed)
-        env.observation_space.seed(seed)
+        env.unwrapped.action_space.seed(seed)
+        env.unwrapped.observation_space.seed(seed)
         return env
 
     return thunk
