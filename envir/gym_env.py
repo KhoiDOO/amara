@@ -1,6 +1,7 @@
 import gymnasium as gym
 
 from stable_baselines3.common.atari_wrappers import (
+    ClipRewardEnv,
     EpisodicLifeEnv,
     FireResetEnv,
     MaxAndSkipEnv,
