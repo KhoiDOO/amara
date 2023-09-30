@@ -1,5 +1,6 @@
 import torch.nn as nn
 from .utils import layer_init
+from torch.distributions.categorical import Categorical
 
 class Nano_CNN_PPO_Agent(nn.Module):
     def __init__(self, envs):
@@ -15,7 +16,7 @@ class Nano_CNN_PPO_Agent(nn.Module):
             layer_init(nn.Linear(64 * 7 * 7, 512)),
             nn.ReLU(),
         )
-        self.actor = layer_init(nn.Linear(512, envs.single_action_space.n), std=0.01)
+        self.actor = layer_init(nn.Linear(512, envs.unwrapped.single_action_space.n), std=0.01)
         self.critic = layer_init(nn.Linear(512, 1), std=1)
 
     def get_value(self, x):
