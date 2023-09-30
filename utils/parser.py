@@ -1,4 +1,5 @@
 import argparse
+import time
 
 def parse_args():
     
@@ -8,7 +9,7 @@ def parse_args():
     # COMMON SETTINGS
     parser.add_argument("--seed", type=int, default=1,
         help="seed of the experiment")
-    parser.add_argument("--torch-deterministic", type=bool, default=True, const=True,
+    parser.add_argument("--torch-deterministic", type=bool, default=True,
         help="Setup torch.backends.cudnn.deterministic")
     parser.add_argument("--verbose", action='store_true', 
         help="Toggle to print reward and episodic length every end of episode")
@@ -21,7 +22,7 @@ def parse_args():
         help="the wandb's project name")
     parser.add_argument("--wandb-entity", type=str, default="scalemind",
         help="the entity (team) of wandb's project")
-    parser.add_argument("--capture-video", type=bool, default=False, const=True,
+    parser.add_argument("--capture-video", type=bool, default=False,
         help="whether to capture videos of the agent performances (check out `videos` folder)")
 
     # TRAINING SETTINGS
@@ -35,7 +36,7 @@ def parse_args():
         help="the number of parallel game environments")
     parser.add_argument("--num-steps", type=int, default=128,
         help="the number of steps to run in each environment per policy rollout")
-    parser.add_argument("--anneal-lr", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
+    parser.add_argument("--anneal-lr", type=bool, default=True,
         help="Toggle learning rate annealing for policy and value networks")
     parser.add_argument("--gamma", type=float, default=0.99,
         help="the discount factor gamma")
@@ -51,11 +52,11 @@ def parse_args():
     # PPO SETTINGS
     parser.add_argument("--gae-lambda", type=float, default=0.95,
         help="the lambda for the general advantage estimation")
-    parser.add_argument("--norm-adv", type=bool, default=True, const=True,
+    parser.add_argument("--norm-adv", type=bool, default=True,
         help="Toggles advantages normalization")
     parser.add_argument("--clip-coef", type=float, default=0.1,
         help="the surrogate clipping coefficient")
-    parser.add_argument("--clip-vloss", type=bool, default=True, const=True,
+    parser.add_argument("--clip-vloss", type=bool, default=True,
         help="Toggles whether or not to use a clipped loss for the value function, as per the paper.")
     parser.add_argument("--ent-coef", type=float, default=0.01,
         help="coefficient of the entropy")
