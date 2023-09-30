@@ -3,7 +3,7 @@ from torch import nn
 import numpy as np
 
 def ppo_solver(agent, optimizer, envs, args, device, 
-               obs, logprobs, actions, dones, rewards, values):
+               obs, next_obs, logprobs, actions, dones, next_done, rewards, values):
     # bootstrap value if not done
     with torch.no_grad():
         next_value = agent.get_value(next_obs).reshape(1, -1)
