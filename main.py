@@ -1,10 +1,11 @@
 import os
 import random
 import time
+from tqdm import tqdm
 
 import torch
 from torch.optim import *
-from torch.distributions.categorical import Categorical
+import numpy as np
 
 from torch.utils.tensorboard import SummaryWriter
 import wandb
@@ -13,7 +14,7 @@ from utils import parse_args
 from model import *
 from envir import *
 from solver import *
-from wrappers import *
+from wrapper import *
 
 model_map = {
     "nano_cnn_ppo_agent" : Nano_CNN_PPO_Agent
@@ -35,7 +36,6 @@ if __name__ == "__main__":
     args = parse_args()
     
     # Logging setup
-    
     writer = SummaryWriter(f"runs/{args.run_name}")
     writer.add_text(
         "hyperparameters",
@@ -64,19 +64,22 @@ if __name__ == "__main__":
     torch.backends.cudnn.deterministic = args.torch_deterministic
     
     # Device
-    device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu", index = args.dvidx)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu", index = args.dvidx)
     
     # Environment Setup
     envs = env_map[f"{args.problem}_env"](args)
     
     # Agent Setup
-    agent = model_map[f"nano_cnn_{args.algo}_agent"].to(device)
+    agent = model_map[f"nano_cnn_{args.algo}_agent"](envs).to(device)
     wandb.watch(models=agent, log="all")
     optimizer = opt_map[args.opt](agent.parameters(), lr=args.learning_rate, eps=1e-5)
     
+    # Solver Setup
+    solver = solver_map[f"{args.algo}"]
+    
     # Storage Setup
-    obs = torch.zeros((args.num_steps, args.num_envs) + envs.single_observation_space.shape).to(device)
-    actions = torch.zeros((args.num_steps, args.num_envs) + envs.single_action_space.shape).to(device)
+    obs = torch.zeros((args.num_steps, args.num_envs) + envs.unwrapped.single_observation_space.shape).to(device)
+    actions = torch.zeros((args.num_steps, args.num_envs) + envs.unwrapped.single_action_space.shape).to(device)
     logprobs = torch.zeros((args.num_steps, args.num_envs)).to(device)
     rewards = torch.zeros((args.num_steps, args.num_envs)).to(device)
     dones = torch.zeros((args.num_steps, args.num_envs)).to(device)
@@ -130,11 +133,11 @@ if __name__ == "__main__":
         
         # update model
         param_dict = {
-            "agent" : agent, "optimizer" : optimizer, "envs" : envs, "args" : args, "device" : device
-            "obs" : obs, "actions" : actions, "logprobs" : logprobs, 
-            "rewards" : rewards, "dones" : dones, "values" : values
+            "agent" : agent, "optimizer" : optimizer, "envs" : envs, "args" : args, "device" : device,
+            "obs" : obs, "next_obs" : next_obs, "actions" : actions, "logprobs" : logprobs,
+            "rewards" : rewards, "dones" : dones, "next_done" : next_done, "values" : values
         }
-        eval_dict = solver_map[f"{args.alog}"](**param_dict)
+        eval_dict = solver(**param_dict)
         
         writer.add_scalar("charts/learning_rate", optimizer.param_groups[0]["lr"], global_step)
         wandb.log({"charts/learning_rate" : optimizer.param_groups[0]["lr"]}, step=global_step)
