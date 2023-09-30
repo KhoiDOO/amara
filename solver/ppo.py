@@ -21,7 +21,7 @@ def ppo_solver(agent, optimizer, envs, args, device,
         returns = advantages + values
 
     # flatten the batch
-    b_obs = obs.reshape((-1,) + envs..unwrapped.single_observation_space.shape)
+    b_obs = obs.reshape((-1,) + envs.unwrapped.single_observation_space.shape)
     b_logprobs = logprobs.reshape(-1)
     b_actions = actions.reshape((-1,) + envs.unwrapped.single_action_space.shape)
     b_advantages = advantages.reshape(-1)
