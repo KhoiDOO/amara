@@ -23,6 +23,10 @@ def parse_args():
         help="the entity (team) of wandb's project")
     parser.add_argument("--capture-video", type=bool, default=False,
         help="whether to capture videos of the agent performances (check out `videos` folder)")
+    parser.add_argument("--log", type=bool, default=True,
+        help="Performance Logging")
+    parser.add_argument("--model_save", type=bool, default=True,
+        help="Model Checkpoint")
 
     # TRAINING SETTINGS
     parser.add_argument("--env-id", type=str, default="PongNoFrameskip-v4",
@@ -45,6 +49,8 @@ def parse_args():
         help="the number of mini-batches")
     parser.add_argument("--update-epochs", type=int, default=4,
         help="the K epochs to update the policy")
+    parser.add_argument("--update_after_ep", type=bool, default=True,
+        help="Model Checkpoint")
     
     # ALGO SETTINGS
     parser.add_argument("--algo", type=str, default='ppo', choices = ['ppo'],
