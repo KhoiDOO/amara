@@ -123,13 +123,14 @@ if __name__ == "__main__":
                 for idx, (_rec, _len) in enumerate(zip(ep_ret, ep_len)):
                     if _rec != 0 and _len != 0 and args.verbose:
                         print(f"gstep={global_step}, ep_r={_rec}, ep_l={_len}")
-                    if _rec != 0:
+                    if _rec != 0 and args.log:
                         writer.add_scalar("charts/episodic_return", _rec, global_step)
                         wandb.log({"charts/episodic_return": _rec}, step=global_step)
-                    if _len != 0:
+                    if _len != 0 and args.log:
                         writer.add_scalar("charts/episodic_length", _len, global_step)
                         wandb.log({"charts/episodic_length": _len}, step=global_step)
-                break
+                if args.update_after_ep:
+                    break
         
         # update model
         param_dict = {
@@ -139,25 +140,27 @@ if __name__ == "__main__":
         }
         eval_dict = solver(**param_dict)
         
-        writer.add_scalar("charts/learning_rate", optimizer.param_groups[0]["lr"], global_step)
-        wandb.log({"charts/learning_rate" : optimizer.param_groups[0]["lr"]}, step=global_step)
-        
-        writer.add_scalar("charts/SPS", int(global_step / (time.time() - start_time)), global_step)
-        wandb.log({"charts/SPS" : int(global_step / (time.time() - start_time))}, step=global_step)
-        
-        for key in eval_dict:
-            writer.add_scalar(key, eval_dict[key], global_step)
-            wandb.log({key : eval_dict[key]}, step=global_step)
+        if args.log:
+            writer.add_scalar("charts/learning_rate", optimizer.param_groups[0]["lr"], global_step)
+            wandb.log({"charts/learning_rate" : optimizer.param_groups[0]["lr"]}, step=global_step)
+            
+            writer.add_scalar("charts/SPS", int(global_step / (time.time() - start_time)), global_step)
+            wandb.log({"charts/SPS" : int(global_step / (time.time() - start_time))}, step=global_step)
+            
+            for key in eval_dict:
+                writer.add_scalar(key, eval_dict[key], global_step)
+                wandb.log({key : eval_dict[key]}, step=global_step)
     
     envs.close()
     writer.close()
     
-    save_dir = os.getcwd() + f"/runs/{args.run_name}"
-    model_path = save_dir + "/model.pth"
-    torch.save(
-        {
-            'model_state_dict': agent.cpu().state_dict(),
-            'global_step' : global_step
-        },
-        model_path
-    )
+    if args.model_save:
+        save_dir = os.getcwd() + f"/runs/{args.run_name}"
+        model_path = save_dir + "/model.pth"
+        torch.save(
+            {
+                'model_state_dict': agent.cpu().state_dict(),
+                'global_step' : global_step
+            },
+            model_path
+        )
