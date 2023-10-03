@@ -117,18 +117,18 @@ if __name__ == "__main__":
             
             if "episode" in info:
                 
-                ep_ret = info['episode']['r'].tolist()
-                ep_len = info['episode']['l'].tolist()
+                _rec = max(info['episode']['r'].tolist())
+                _len = max(info['episode']['l'].tolist())
                 
-                for idx, (_rec, _len) in enumerate(zip(ep_ret, ep_len)):
-                    if _rec != 0 and _len != 0 and args.verbose:
-                        print(f"gstep={global_step}, ep_r={_rec}, ep_l={_len}")
-                    if _rec != 0 and args.log:
-                        writer.add_scalar("charts/episodic_return", _rec, global_step)
-                        wandb.log({"charts/episodic_return": _rec}, step=global_step)
-                    if _len != 0 and args.log:
-                        writer.add_scalar("charts/episodic_length", _len, global_step)
-                        wandb.log({"charts/episodic_length": _len}, step=global_step)
+                # for idx, (_rec, _len) in enumerate(zip(ep_ret, ep_len)):
+                if _rec != 0 and _len != 0 and args.verbose:
+                    print(f"gstep={global_step}, ep_r={_rec}, ep_l={_len}")
+                if _rec != 0 and args.log:
+                    writer.add_scalar("charts/episodic_return", _rec, global_step)
+                    wandb.log({"charts/episodic_return": _rec}, step=global_step)
+                if _len != 0 and args.log:
+                    writer.add_scalar("charts/episodic_length", _len, global_step)
+                    wandb.log({"charts/episodic_length": _len}, step=global_step)
                 if args.update_after_ep:
                     break
         
