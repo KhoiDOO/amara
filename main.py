@@ -117,16 +117,16 @@ if __name__ == "__main__":
             
             if "episode" in info:
                 
-                _rec = max(info['episode']['r'].tolist())
-                _len = max(info['episode']['l'].tolist())
+                _rec = max([x for x in info['episode']['r'].tolist() if x != 0])
+                _len = max([x for x in info['episode']['l'].tolist() if x != 0])
                 
                 # for idx, (_rec, _len) in enumerate(zip(ep_ret, ep_len)):
-                if _rec != 0 and _len != 0 and args.verbose:
+                if args.verbose:
                     print(f"gstep={global_step}, ep_r={_rec}, ep_l={_len}")
-                if _rec != 0 and args.log:
+                if args.log:
                     writer.add_scalar("charts/episodic_return", _rec, global_step)
                     wandb.log({"charts/episodic_return": _rec}, step=global_step)
-                if _len != 0 and args.log:
+                if args.log:
                     writer.add_scalar("charts/episodic_length", _len, global_step)
                     wandb.log({"charts/episodic_length": _len}, step=global_step)
                 if args.update_after_ep:
