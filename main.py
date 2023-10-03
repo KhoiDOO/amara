@@ -121,8 +121,8 @@ if __name__ == "__main__":
                 len_lst = [x for x in info['episode']['l'].tolist() if x != 0]
                 
                 if len(rec_lst) > 0 and len(len_lst) > 0:
-                    _rec = max()
-                    _len = max()
+                    _rec = max(rec_lst)
+                    _len = max(len_lst)
                     
                     # for idx, (_rec, _len) in enumerate(zip(ep_ret, ep_len)):
                     if args.verbose:
