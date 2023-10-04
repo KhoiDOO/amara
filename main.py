@@ -17,7 +17,8 @@ from solver import *
 from wrapper import *
 
 model_map = {
-    "nano_cnn_ppo_agent" : Nano_CNN_PPO_Agent
+    "nano_cnn_ppo_agent" : Nano_CNN_PPO_Agent,
+    "nano_cnn_gl_agent" : Nano_CNN_QL_Agent
 }
 
 env_map = {
