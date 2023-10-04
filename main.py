@@ -73,7 +73,7 @@ if __name__ == "__main__":
     # Agent Setup
     agent = model_map[f"nano_cnn_{args.algo}_agent"](envs).to(device)
     wandb.watch(models=agent, log="all")
-    optimizer = opt_map[args.opt](agent.parameters(), lr=args.learning_rate, eps=1e-5)
+    opt = opt_map[args.opt](agent.parameters(), lr=args.learning_rate, eps=1e-5)
     
     # Solver Setup
     solver = solver_map[f"{args.algo}"]
@@ -99,7 +99,7 @@ if __name__ == "__main__":
         if args.anneal_lr:
             frac = 1.0 - (update - 1.0) / num_updates
             lrnow = frac * args.learning_rate
-            optimizer.param_groups[0]["lr"] = lrnow
+            opt.param_groups[0]["lr"] = lrnow
             
         for step in range(0, args.num_steps):
             global_step += 1 * args.num_envs
@@ -139,15 +139,15 @@ if __name__ == "__main__":
         
         # update model
         param_dict = {
-            "agent" : agent, "optimizer" : optimizer, "envs" : envs, "args" : args, "device" : device,
+            "agent" : agent, "optimizer" : opt, "envs" : envs, "args" : args, "device" : device,
             "obs" : obs, "next_obs" : next_obs, "actions" : actions, "logprobs" : logprobs,
             "rewards" : rewards, "dones" : dones, "next_done" : next_done, "values" : values
         }
         eval_dict = solver(**param_dict)
         
         if args.log:
-            writer.add_scalar("charts/learning_rate", optimizer.param_groups[0]["lr"], global_step)
-            wandb.log({"charts/learning_rate" : optimizer.param_groups[0]["lr"]}, step=global_step)
+            writer.add_scalar("charts/learning_rate", opt.param_groups[0]["lr"], global_step)
+            wandb.log({"charts/learning_rate" : opt.param_groups[0]["lr"]}, step=global_step)
             
             writer.add_scalar("charts/SPS", int(global_step / (time.time() - start_time)), global_step)
             wandb.log({"charts/SPS" : int(global_step / (time.time() - start_time))}, step=global_step)
