@@ -53,7 +53,7 @@ def parse_args():
         help="Model Checkpoint")
     
     # ALGO SETTINGS
-    parser.add_argument("--algo", type=str, default='ppo', choices = ['ppo'],
+    parser.add_argument("--algo", type=str, default='ppo', choices = ['ppo', 'dqn'],
         help="Alogrithm used in training")
     
     # PPO SETTINGS
