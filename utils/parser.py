@@ -89,10 +89,15 @@ def parse_args():
         help="timestep to start learning")
     parser.add_argument("--train-frequency", type=int, default=4,
         help="the frequency of training")
+    parser.add_argument("--batch-size", type=int, default=32,
+        help="the batch size of sample from the reply memory")
+    parser.add_argument("--buffer-size", type=int, default=1000000,
+        help="the replay memory buffer size")
     
     args = parser.parse_args()
-    args.batch_size = int(args.num_envs * args.num_steps)
-    args.minibatch_size = int(args.batch_size // args.num_minibatches)
+    if args.algo == "ppo":
+        args.batch_size = int(args.num_envs * args.num_steps)
+        args.minibatch_size = int(args.batch_size // args.num_minibatches)
     args.run_name = f"{args.env_id}__{args.algo}__{args.seed}__{int(time.time())}"
     
     return args

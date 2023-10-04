@@ -16,6 +16,8 @@ from envir import *
 from solver import *
 from wrapper import *
 
+from stable_baselines3.common.buffers import ReplayBuffer
+
 model_map = {
     "nano_cnn_ppo_agent" : Nano_CNN_PPO_Agent,
     "nano_cnn_dqn_agent" : Nano_CNN_DQN_Agent
@@ -98,7 +100,10 @@ if __name__ == "__main__":
         values_storage = torch.zeros((args.num_steps, args.num_envs)).to(device)
         logprobs_storage = torch.zeros((args.num_steps, args.num_envs)).to(device)
     elif args.algo == "dqn":
-        next_obs_storage = torch.zeros((args.num_steps, args.num_envs) + envs.unwrapped.single_observation_space.shape).to(device)
+        storage = ReplayBuffer(
+            args.buffer_size, envs.unwrapped.single_observation_space, envs.unwrapped.single_action_space,
+            device, optimize_memory_usage=True, handle_timeout_termination=False,
+        )
     
     # Training
     global_step = 0
@@ -139,6 +144,7 @@ if __name__ == "__main__":
             if args.algo == "ppo":
                 logprobs_storage[step] = logprob
 
+            old_obs = next_obs.cpu().numpy()
             next_obs, reward, done, _, info = envs.step(action.cpu().numpy())
             rewards_storage[step] = torch.tensor(reward).to(device).view(-1)
             next_obs, next_done = torch.Tensor(next_obs).to(device), torch.Tensor(done).to(device)
@@ -198,7 +204,7 @@ if __name__ == "__main__":
             writer.add_scalar("charts/learning_rate", opt.param_groups[0]["lr"], global_step)
             wandb.log({"charts/learning_rate" : opt.param_groups[0]["lr"]}, step=global_step)
             
-            writer.add_scalar("charts/SPS", int(global_step / (time.time() - start_time)), global_step)
+            writer.add_scalar("chartsfrom stable_baselines3.common.buffers import ReplayBuffer/SPS", int(global_step / (time.time() - start_time)), global_step)
             wandb.log({"charts/SPS" : int(global_step / (time.time() - start_time))}, step=global_step)
             
             for key in eval_dict:
