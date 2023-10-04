@@ -90,12 +90,11 @@ if __name__ == "__main__":
     solver = solver_map[f"{args.algo}"]
     
     # Storage Setup
-    obs_storage = torch.zeros((args.num_steps, args.num_envs) + envs.unwrapped.single_observation_space.shape).to(device)
-    actions_storage = torch.zeros((args.num_steps, args.num_envs) + envs.unwrapped.single_action_space.shape).to(device)
-    rewards_storage = torch.zeros((args.num_steps, args.num_envs)).to(device)
-    dones_storage = torch.zeros((args.num_steps, args.num_envs)).to(device)
-    
     if args.algo == "ppo":
+        obs_storage = torch.zeros((args.num_steps, args.num_envs) + envs.unwrapped.single_observation_space.shape).to(device)
+        actions_storage = torch.zeros((args.num_steps, args.num_envs) + envs.unwrapped.single_action_space.shape).to(device)
+        rewards_storage = torch.zeros((args.num_steps, args.num_envs)).to(device)
+        dones_storage = torch.zeros((args.num_steps, args.num_envs)).to(device)
         values_storage = torch.zeros((args.num_steps, args.num_envs)).to(device)
         logprobs_storage = torch.zeros((args.num_steps, args.num_envs)).to(device)
     elif args.algo == "dqn":
@@ -131,7 +130,7 @@ if __name__ == "__main__":
                         action = np.array([envs.unwrapped.single_action_space.sample() for _ in range(envs.num_envs)])
                     else:
                         q_values = agent(torch.Tensor(next_obs).to(device))
-                        action = torch.argmax(q_values, dim=1).cpu().numpy()\
+                        action = torch.argmax(q_values, dim=1).cpu().numpy()
             
             if isinstance(action, np.ndarray):
                 action = torch.from_numpy(action)
