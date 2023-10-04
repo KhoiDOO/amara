@@ -30,7 +30,7 @@ class Nano_CNN_PPO_Agent(nn.Module):
             action = probs.sample()
         return action, probs.log_prob(action), probs.entropy(), self.critic(hidden)
 
-class Nano_CNN_QL_Agent(nn.Module):
+class Nano_CNN_DQN_Agent(nn.Module):
     def __init__(self, env):
         super().__init__()
         self.network = nn.Sequential(
