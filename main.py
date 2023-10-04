@@ -30,31 +30,33 @@ opt_map = {
 }
 
 solver_map = {
-    "ppo" : ppo_solver
+    "ppo" : ppo_solver,
+    "dqn" : dqn_solver
 }
 
 if __name__ == "__main__":
     args = parse_args()
     
     # Logging setup
-    writer = SummaryWriter(f"runs/{args.run_name}")
-    writer.add_text(
-        "hyperparameters",
-        "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in vars(args).items()])),
-    )
+    if args.log:
+        writer = SummaryWriter(f"runs/{args.run_name}")
+        writer.add_text(
+            "hyperparameters",
+            "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in vars(args).items()])),
+        )
     
-    with open(os.getcwd() + "/wandb_key/key.txt", 'r') as file:
-        key = file.read()
-    
-    os.system(f"wandb login {key}")
-    
-    wandb.init(
-        project=args.wandb_project_name,
-        entity=args.wandb_entity,
-        config=args,
-        name=args.run_name,
-        force=True
-    )
+        with open(os.getcwd() + "/wandb_key/key.txt", 'r') as file:
+            key = file.read()
+        
+        os.system(f"wandb login {key}")
+        
+        wandb.init(
+            project=args.wandb_project_name,
+            entity=args.wandb_entity,
+            config=args,
+            name=args.run_name,
+            force=True
+        )
     
     # Seeding
     random.seed(args.seed)
@@ -73,14 +75,16 @@ if __name__ == "__main__":
     # Agent Setup
     if args.algo == "ppo":
         agent = model_map[f"nano_cnn_{args.algo}_agent"](envs).to(device)
-        wandb.watch(models=agent, log="all")
+        
         opt = opt_map[args.opt](agent.parameters(), lr=args.learning_rate, eps=1e-5)
     elif args.algo == "dqn":
         agent = model_map[f"nano_cnn_{args.algo}_agent"](envs).to(device)
-        wandb.watch(models=agent, log="all")
         opt = opt_map[args.opt](agent.parameters(), lr=args.learning_rate)
         target_network = model_map[f"nano_cnn_{args.algo}_agent"](envs).to(device)
         target_network.load_state_dict(agent.state_dict())
+    
+    if args.log:
+        wandb.watch(models=agent, log="all")
     
     # Solver Setup
     solver = solver_map[f"{args.algo}"]
@@ -127,8 +131,12 @@ if __name__ == "__main__":
                         action = np.array([envs.unwrapped.single_action_space.sample() for _ in range(envs.num_envs)])
                     else:
                         q_values = agent(torch.Tensor(next_obs).to(device))
-                        action = torch.argmax(q_values, dim=1).cpu().numpy()
+                        action = torch.argmax(q_values, dim=1).cpu().numpy()\
+            
+            if isinstance(action, np.ndarray):
+                action = torch.from_numpy(action)
             actions_storage[step] = action
+            
             if args.algo == "ppo":
                 logprobs_storage[step] = logprob
 
@@ -163,7 +171,7 @@ if __name__ == "__main__":
         common_dict = {
             "envs" : envs, "args" : args, "device" : device
         }
-        if args.alog == "ppo":
+        if args.algo == "ppo":
             buffer_dict = {
                 "obs" : obs_storage, "next_obs" : next_obs, "actions" : actions_storage, "logprobs" : logprobs_storage, 
                 "rewards" : rewards_storage, "dones" : dones_storage, "next_done" : next_done, "values" : values_storage
@@ -179,7 +187,9 @@ if __name__ == "__main__":
         elif args.algo == "dqn":
             param_dict = {"q_network" : agent, "target_network" : target_network, "optimizer" : opt}
             
-        param_dict.update(buffer_dict.update(common_dict))
+        buffer_dict.update(common_dict)
+        param_dict.update(buffer_dict)
+        
         if args.algo == "ppo":
             eval_dict = solver(**param_dict)
         elif args.algo == "dqn" and global_step > args.learning_starts:
