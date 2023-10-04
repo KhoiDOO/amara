@@ -43,7 +43,7 @@ class Nano_CNN_DQN_Agent(nn.Module):
             nn.Flatten(),
             nn.Linear(3136, 512),
             nn.ReLU(),
-            nn.Linear(512, env.single_action_space.n),
+            nn.Linear(512, env.unwrapped.single_action_space.n),
         )
 
     def forward(self, x):
