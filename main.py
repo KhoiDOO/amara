@@ -10,7 +10,7 @@ import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 import wandb
 
-from utils import parse_args
+from utils import *
 from model import *
 from envir import *
 from solver import *
@@ -18,7 +18,7 @@ from wrapper import *
 
 model_map = {
     "nano_cnn_ppo_agent" : Nano_CNN_PPO_Agent,
-    "nano_cnn_gl_agent" : Nano_CNN_QL_Agent
+    "nano_cnn_dqn_agent" : Nano_CNN_DQN_Agent
 }
 
 env_map = {
@@ -71,20 +71,31 @@ if __name__ == "__main__":
     envs = env_map[f"{args.problem}_env"](args)
     
     # Agent Setup
-    agent = model_map[f"nano_cnn_{args.algo}_agent"](envs).to(device)
-    wandb.watch(models=agent, log="all")
-    opt = opt_map[args.opt](agent.parameters(), lr=args.learning_rate, eps=1e-5)
+    if args.algo == "ppo":
+        agent = model_map[f"nano_cnn_{args.algo}_agent"](envs).to(device)
+        wandb.watch(models=agent, log="all")
+        opt = opt_map[args.opt](agent.parameters(), lr=args.learning_rate, eps=1e-5)
+    elif args.algo == "dqn":
+        agent = model_map[f"nano_cnn_{args.algo}_agent"](envs).to(device)
+        wandb.watch(models=agent, log="all")
+        opt = opt_map[args.opt](agent.parameters(), lr=args.learning_rate)
+        target_network = model_map[f"nano_cnn_{args.algo}_agent"](envs).to(device)
+        target_network.load_state_dict(agent.state_dict())
     
     # Solver Setup
     solver = solver_map[f"{args.algo}"]
     
     # Storage Setup
-    obs = torch.zeros((args.num_steps, args.num_envs) + envs.unwrapped.single_observation_space.shape).to(device)
-    actions = torch.zeros((args.num_steps, args.num_envs) + envs.unwrapped.single_action_space.shape).to(device)
-    logprobs = torch.zeros((args.num_steps, args.num_envs)).to(device)
-    rewards = torch.zeros((args.num_steps, args.num_envs)).to(device)
-    dones = torch.zeros((args.num_steps, args.num_envs)).to(device)
-    values = torch.zeros((args.num_steps, args.num_envs)).to(device)
+    obs_storage = torch.zeros((args.num_steps, args.num_envs) + envs.unwrapped.single_observation_space.shape).to(device)
+    actions_storage = torch.zeros((args.num_steps, args.num_envs) + envs.unwrapped.single_action_space.shape).to(device)
+    rewards_storage = torch.zeros((args.num_steps, args.num_envs)).to(device)
+    dones_storage = torch.zeros((args.num_steps, args.num_envs)).to(device)
+    
+    if args.algo == "ppo":
+        values_storage = torch.zeros((args.num_steps, args.num_envs)).to(device)
+        logprobs_storage = torch.zeros((args.num_steps, args.num_envs)).to(device)
+    elif args.algo == "dqn":
+        next_obs_storage = torch.zeros((args.num_steps, args.num_envs) + envs.unwrapped.single_observation_space.shape).to(device)
     
     # Training
     global_step = 0
@@ -96,25 +107,36 @@ if __name__ == "__main__":
     pbar = range(1, num_updates + 1) if args.verbose else tqdm(range(1, num_updates + 1))
     
     for update in pbar:
-        if args.anneal_lr:
+        if args.anneal_lr and args.algo != "dqn":
             frac = 1.0 - (update - 1.0) / num_updates
             lrnow = frac * args.learning_rate
             opt.param_groups[0]["lr"] = lrnow
             
         for step in range(0, args.num_steps):
             global_step += 1 * args.num_envs
-            obs[step] = next_obs
-            dones[step] = next_done
+            obs_storage[step] = next_obs
+            dones_storage[step] = next_done
 
             with torch.no_grad():
-                action, logprob, _, value = agent.get_action_and_value(next_obs)
-                values[step] = value.flatten()
-            actions[step] = action
-            logprobs[step] = logprob
+                if args.algo == "ppo":
+                    action, logprob, _, value = agent.get_action_and_value(next_obs)
+                    values_storage[step] = value.flatten()
+                elif args.algo == "dqn":
+                    epsilon = linear_schedule(args.start_e, args.end_e, args.exploration_fraction * args.total_timesteps, global_step)
+                    if random.random() < epsilon:
+                        action = np.array([envs.unwrapped.single_action_space.sample() for _ in range(envs.num_envs)])
+                    else:
+                        q_values = agent(torch.Tensor(next_obs).to(device))
+                        action = torch.argmax(q_values, dim=1).cpu().numpy()
+            actions_storage[step] = action
+            if args.algo == "ppo":
+                logprobs_storage[step] = logprob
 
             next_obs, reward, done, _, info = envs.step(action.cpu().numpy())
-            rewards[step] = torch.tensor(reward).to(device).view(-1)
+            rewards_storage[step] = torch.tensor(reward).to(device).view(-1)
             next_obs, next_done = torch.Tensor(next_obs).to(device), torch.Tensor(done).to(device)
+            if args.algo == "dqn":
+                next_obs_storage[step] = next_obs
             
             if "episode" in info:
                 
@@ -138,12 +160,30 @@ if __name__ == "__main__":
                         break
         
         # update model
-        param_dict = {
-            "agent" : agent, "optimizer" : opt, "envs" : envs, "args" : args, "device" : device,
-            "obs" : obs, "next_obs" : next_obs, "actions" : actions, "logprobs" : logprobs,
-            "rewards" : rewards, "dones" : dones, "next_done" : next_done, "values" : values
+        common_dict = {
+            "envs" : envs, "args" : args, "device" : device
         }
-        eval_dict = solver(**param_dict)
+        if args.alog == "ppo":
+            buffer_dict = {
+                "obs" : obs_storage, "next_obs" : next_obs, "actions" : actions_storage, "logprobs" : logprobs_storage, 
+                "rewards" : rewards_storage, "dones" : dones_storage, "next_done" : next_done, "values" : values_storage
+            }
+        elif args.algo == "dqn":
+            buffer_dict = {
+                "obs" : obs_storage, "next_obs" : next_obs_storage, "rewards" : rewards_storage, 
+                "dones" : dones_storage, "actions" : actions_storage, "global_step" : global_step
+            }
+        
+        if args.algo == "ppo":
+            param_dict = {"agent" : agent, "optimizer" : opt}
+        elif args.algo == "dqn":
+            param_dict = {"q_network" : agent, "target_network" : target_network, "optimizer" : opt}
+            
+        param_dict.update(buffer_dict.update(common_dict))
+        if args.algo == "ppo":
+            eval_dict = solver(**param_dict)
+        elif args.algo == "dqn" and global_step > args.learning_starts:
+            eval_dict = solver(**param_dict)
         
         if args.log:
             writer.add_scalar("charts/learning_rate", opt.param_groups[0]["lr"], global_step)
